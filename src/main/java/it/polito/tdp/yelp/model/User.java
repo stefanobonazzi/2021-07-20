@@ -101,6 +101,10 @@ public class User {
 			return false;
 		return true;
 	}
-	
+
+	@Override
+	public String toString() {
+		return String.format("%s (%s)",  name, userId);
+	}
 	
 }
