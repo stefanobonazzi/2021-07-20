@@ -5,9 +5,12 @@
 package it.polito.tdp.yelp;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import it.polito.tdp.yelp.model.Model;
+import it.polito.tdp.yelp.model.User;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -38,13 +41,13 @@ public class FXMLController {
     private TextField txtX2; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbAnno"
-    private ComboBox<?> cmbAnno; // Value injected by FXMLLoader
+    private ComboBox<Integer> cmbAnno; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtN"
     private TextField txtN; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbUtente"
-    private ComboBox<?> cmbUtente; // Value injected by FXMLLoader
+    private ComboBox<User> cmbUtente; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtX1"
     private TextField txtX1; // Value injected by FXMLLoader
@@ -54,17 +57,62 @@ public class FXMLController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
-
+    	int n;
+    	try {
+    		n = Integer.parseInt(txtN.getText());
+		} catch (Exception e) {
+			txtResult.setText("Inserisci un numero n intero!");
+			return;
+		}
+    	
+    	Integer year = cmbAnno.getValue();
+    	if(year == null) {
+    		txtResult.setText("Seleziona un anno!");
+    		return;
+    	}
+    	
+    	Set<User> users = this.model.creaGrafo(n, year);
+    	txtResult.setText("Grafo creato con "+this.model.getGraph().vertexSet().size()+" vertici e "+this.model.getGraph().edgeSet().size()+" archi");
+    	cmbUtente.getItems().clear();
+    	cmbUtente.getItems().addAll(users);
     }
 
     @FXML
     void doUtenteSimile(ActionEvent event) {
-
+    	txtResult.clear();
+    	User user = cmbUtente.getValue();
+    	if(user == null) {
+    		txtResult.setText("Seleziona un utente!");
+    		return;
+    	}
+    	
+    	Map<User, Integer> m = this.model.getSimilarita(user);
+    	txtResult.setText("Utenti più simili a "+user+":\n\n");
+    	for (User u: m.keySet()) {
+			txtResult.appendText(u+"\t GRADO: "+m.get(u)+"\n");
+		}
     }
     
     @FXML
     void doSimula(ActionEvent event) {
-
+    	int x1;
+    	int x2;
+    	try {
+    		x1 = Integer.parseInt(txtX1.getText());
+    		x2 = Integer.parseInt(txtX2.getText());
+		} catch (Exception e) {
+			txtResult.setText("Inserisci due numeri interi!\nNB: il numero di utenti deve essere minore di "+
+							this.model.getGraph().vertexSet().size()+" e quello di intervistatori molto minore.");
+			return;
+		}
+    	if(x1 > x2/3) {
+    		txtResult.setText("Gli intervistatori devono essere meno di "+x2/3+" per impostazione del programmatore");
+    		return;
+    	}
+    	
+    	String s = this.model.simula(x1, x2);
+    	
+    	txtResult.setText(s);
     }
     
 
@@ -84,5 +132,7 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	cmbAnno.getItems().addAll(2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013);
     }
+    
 }
